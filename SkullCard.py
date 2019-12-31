@@ -1,4 +1,4 @@
-from SkullConstants import SkullEnum, Sizes
+from skullconstants import SkullEnum, Sizes
 
 class SkullCard(object):
     """

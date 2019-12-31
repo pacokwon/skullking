@@ -1,4 +1,4 @@
-from SkullConstants import SkullEnum
+from skullconstants import SkullEnum
 
 class Player:
     """

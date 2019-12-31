@@ -1,5 +1,5 @@
-from Deck import Deck
-from Game import Game
+from deck import Deck
+from game import Game
 
 def main():
     """

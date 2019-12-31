@@ -1,6 +1,6 @@
-from Deck import Deck
-from Player import Player
-from SkullConstants import DEBUG, SkullEnum
+from deck import Deck
+from player import Player
+from skullconstants import DEBUG, SkullEnum
 
 class Game:
     """
@@ -59,7 +59,7 @@ class Game:
             print(f"Player {ith}\t{player.score}")
 
         if DEBUG:
-            print(f"-------- Round {round_count} Fin --------")
+            print(f"-------- Round {self.round_count} Fin --------")
 
         self.round_count += 1
 

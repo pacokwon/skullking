@@ -1,5 +1,5 @@
 from random import shuffle
-from SkullCard import *
+from skullcard import *
 
 class Deck:
     SIZE = sum(Sizes.values())
