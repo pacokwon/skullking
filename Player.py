@@ -24,10 +24,10 @@ class Player:
         """
         Show the set of cards that this player currently has
         """
-        print(f"------- Player {self.id + 1} CARDS --------")
+        print(f"\n------- Player {self.id + 1} CARDS --------")
         for idx, card in enumerate(self.cards):
             print(f"{idx + 1}:\t{card}")
-        print("-------------------------------\n")
+        print("-------------------------------")
 
     def choose(self, theme_of_table):
         """
@@ -71,10 +71,10 @@ class Player:
         Yohoho!
         """
         self.show_cards()
-        chosen = input(f"Player {self.id} - Yo ho ho!: ")
+        chosen = input(f"Player {self.id + 1} - Yo ho ho!: ")
         while not chosen.isdecimal():
             print(f"Choose a number!")
-            chosen = input(f"Player {self.id} - Yo ho ho!: ")
+            chosen = input(f"Player {self.id + 1} - Yo ho ho!: ")
 
         return int(chosen)
 
@@ -97,10 +97,8 @@ class Player:
         """
         repr function of Player class
         """
-        rpr = f"Player {self.id}:\n"
-        rpr += "[\n"
+        rpr = f"\nPlayer {self.id}:\n"
         for card in self.cards:
             rpr += f"\t{card},\n"
-        rpr += "]"
 
         return rpr

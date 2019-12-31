@@ -26,6 +26,8 @@ class Game:
         """
         Operate a single round
         """
+        if DEBUG:
+            print(f"------- Round {self.round_count} Start -------")
         # initialize each players' win counts for this round
         wins_count = [0] * len(self.players)
 
@@ -55,6 +57,9 @@ class Game:
 
         for ith, player in enumerate(self.players):
             print(f"Player {ith}\t{player.score}")
+
+        if DEBUG:
+            print(f"-------- Round {round_count} Fin --------")
 
         self.round_count += 1
 
@@ -161,6 +166,11 @@ class Game:
         winning = -1
         theme_tuple = ( SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE, SkullEnum.BLACK )
 
+        if DEBUG:
+            print("\n------- Evaluation Start -------")
+            print("Cards on Table:")
+            print(cards_on_table)
+
         for idx, choice in enumerate( cards_on_table ):
             if DEBUG:
                 print(f"\nPlayer {idx}'s turn")
@@ -183,7 +193,8 @@ class Game:
                 winning = idx
 
         if DEBUG:
-            print(f"Winner of this turn is Player {winning}, with {cards_on_table[winning]}\n")
+            print(f"\nWinner of this turn is Player {winning + 1}, with {cards_on_table[winning]}")
+            print("-------- Evaluation Fin --------\n")
 
         return winning
 

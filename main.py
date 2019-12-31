@@ -11,6 +11,7 @@ def main():
 
 if __name__ == "__main__":
     # deck = Deck()
-    game = Game(3)
-    game.operate_round()
-    print(game.winners())
+    # game = Game(3)
+    # game.operate_round()
+    # print(game.winners())
+    main()
