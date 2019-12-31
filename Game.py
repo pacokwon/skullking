@@ -1,6 +1,6 @@
 from Deck import Deck
 from Player import Player
-from SkullConstants import SkullEnum
+from SkullConstants import DEBUG, SkullEnum
 
 class Game:
     """
@@ -21,7 +21,6 @@ class Game:
         self.deck = Deck()
         self.players = [Player() for _ in range(nplayers)]
         self.yohoho = [0 for _ in range(nplayers)]
-        self.debug = True
 
     def operate_round(self):
         """
@@ -34,7 +33,7 @@ class Game:
         for player in self.players:
             player.set_cards([self.deck.deal() for _ in range(self.round_count)])
 
-        if self.debug:
+        if DEBUG:
             print("Deal Complete")
             print(self.players)
 
@@ -68,22 +67,22 @@ class Game:
         returns:
             the id of the winner
         """
-        choices = []
+        cards_on_table = []
 
         player_idx = 0
         # take turns choosing a card
         while player_idx < len(self.players):
             who_goes_idx = (self.goes_first + player_idx) % len(self.players)
-            chosen = self.players[who_goes_idx].choose() # choose() returns a card object
+            chosen = self.players[who_goes_idx].choose(self.extract_theme(cards_on_table)) # choose() returns a card object
 
-            if self.debug:
+            if DEBUG:
                 print(f"Player {who_goes_idx} chose {chosen}")
 
-            choices.append(chosen)
+            cards_on_table.append(chosen)
             player_idx += 1
 
         # evaluate winner of this game
-        self.goes_first = ( self.evaluate_winner(choices) + len(self.players) - self.goes_first ) % len(self.players)
+        self.goes_first = ( self.evaluate_winner(cards_on_table) + len(self.players) - self.goes_first ) % len(self.players)
         return self.goes_first
 
     def evaluate_two(self, card1, card2):
@@ -148,12 +147,12 @@ class Game:
 
             return False
 
-    def evaluate_winner(self, choices):
+    def evaluate_winner(self, cards_on_table):
         """
         Evaluate the winner among the list of SkullCard objects
 
         params:
-            choices: list of SkullCard objects
+            cards_on_table: list of SkullCard objects
 
         returns:
             the index of the winner
@@ -162,30 +161,29 @@ class Game:
         winning = -1
         theme_tuple = ( SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE, SkullEnum.BLACK )
 
-        for idx, choice in enumerate( choices ):
-            if self.debug:
-                print(f"Player {idx}'s turn")
+        for idx, choice in enumerate( cards_on_table ):
+            if DEBUG:
+                print(f"\nPlayer {idx}'s turn")
 
             if theme == None and choice.CARDTYPE in theme_tuple:
                 theme = choice.CARDTYPE
-                if self.debug:
-                    print(f"The turn's theme became {theme}")
+                if DEBUG:
+                    print(f"\tThe turn's theme became {theme}")
 
             if winning == -1:
                 if choice.CARDTYPE != SkullEnum.WHITE:
                     winning = idx
-                    if self.debug:
-                        print(f"Player {idx} is the leader of this turn")
+                    if DEBUG:
+                        print(f"\tPlayer {idx} is the leader of this turn")
                 continue
 
-            if not self.evaluate_two(choices[winning], choices[idx]):
-                if self.debug:
-                    print(f"Player {idx} {choices[idx]} & Player {winning} {choices[winning]} Evaluation -> Winner is Player {choices[idx]}")
+            if not self.evaluate_two(cards_on_table[winning], cards_on_table[idx]):
+                if DEBUG:
+                    print(f"\tPlayer {idx} {cards_on_table[idx]} & Player {winning} {cards_on_table[winning]} Evaluation -> Winner is {cards_on_table[idx]}")
                 winning = idx
 
-
-        if self.debug:
-            print(f"Winner of this turn is Player {winning}, with {choices[winning]}")
+        if DEBUG:
+            print(f"Winner of this turn is Player {winning}, with {cards_on_table[winning]}\n")
 
         return winning
 
@@ -210,3 +208,19 @@ class Game:
 
         return tuple(winners)
 
+    def extract_theme(self, cards):
+        """
+        Extract theme from a list of cards
+        params:
+            cards: list of SkullCard objects
+        returns:
+            the theme of the parameter 'cards'
+            None if there is no theme
+        """
+        color_tuple = ( SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE, SkullEnum.BLACK )
+
+        for card in cards:
+            if card.CARDTYPE in color_tuple:
+                return card.CARDTYPE
+
+        return None

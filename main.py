@@ -8,7 +8,6 @@ def main():
     game = Game(3)
     for _ in range(10):
         game.operate_round()
-    print()
 
 if __name__ == "__main__":
     # deck = Deck()

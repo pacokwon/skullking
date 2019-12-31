@@ -11,6 +11,7 @@
 #     PIRATE      = 6
 #     GREENPIRATE = 7
 #     SKULLKING   = 8
+DEBUG = True
 
 class SkullEnum(object):
     """

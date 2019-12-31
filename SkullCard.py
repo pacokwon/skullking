@@ -1,6 +1,9 @@
 from SkullConstants import SkullEnum, Sizes
 
 class SkullCard(object):
+    """
+    Base class for types of cards in the game
+    """
     CARDTYPE = None
     def __repr__(self):
         return f"{self.CARDTYPE}"
