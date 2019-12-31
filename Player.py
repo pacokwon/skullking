@@ -1,3 +1,5 @@
+from SkullConstants import SkullEnum
+
 class Player:
     """
     Player class
@@ -19,6 +21,9 @@ class Player:
         self.cards = cards
 
     def show_cards(self):
+        """
+        Show the set of cards that this player currently has
+        """
         print(f"------- Player {self.id + 1} CARDS --------")
         for idx, card in enumerate(self.cards):
             print(f"{idx + 1}:\t{card}")
@@ -34,7 +39,13 @@ class Player:
         """
         self.show_cards()
         _has_theme = self.has_theme(theme_of_table)
-        print(f"Theme: { theme_of_table } HasTheme: { _has_theme }")
+        special_tuple = (
+            SkullEnum.WHITE,
+            SkullEnum.MERMAID,
+            SkullEnum.PIRATE,
+            SkullEnum.GREENPIRATE,
+            SkullEnum.SKULLKING
+        )
 
         idx = 0
         while idx < 1:
@@ -45,11 +56,11 @@ class Player:
             elif not (1 <= int(chosen) <= len(self.cards)):
                 print(f"Choose a number between 1 and {len(self.cards)}")
                 idx -= 1
-            elif _has_theme and self.cards[int(chosen) - 1].CARDTYPE != theme_of_table:
+            elif _has_theme \
+                and self.cards[int(chosen) - 1].CARDTYPE not in special_tuple \
+                and self.cards[int(chosen) - 1].CARDTYPE != theme_of_table:
                 print(f"You have a card of the theme {theme_of_table}. You must choose that card")
                 idx -= 1
-
-            print(f"CardType: {self.cards[int(chosen) - 1].CARDTYPE}, Theme: {theme_of_table}")
 
             idx += 1
 
