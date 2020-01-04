@@ -1,13 +1,12 @@
 from deck import Deck
 from game import Game
 
+
 def main():
-    """
-    main function of program
-    """
     game = Game(3)
     for _ in range(10):
         game.operate_round()
+
 
 if __name__ == "__main__":
     # deck = Deck()

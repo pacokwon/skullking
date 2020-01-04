@@ -1,11 +1,14 @@
 from skullconstants import SkullEnum
 
+
 class Player:
     """
     Player class
     A player has cards, and id and a score
     """
+
     ID = 0
+
     def __init__(self):
         self.cards = []
         self.id = Player.ID
@@ -44,22 +47,28 @@ class Player:
             SkullEnum.MERMAID,
             SkullEnum.PIRATE,
             SkullEnum.GREENPIRATE,
-            SkullEnum.SKULLKING
+            SkullEnum.SKULLKING,
         )
 
         idx = 0
         while idx < 1:
-            chosen = input(f"Player {self.id} - Choose Card: ( 1 ~ {len(self.cards)} ): ")
+            chosen = input(
+                f"Player {self.id} - Choose Card: ( 1 ~ {len(self.cards)} ): "
+            )
             if not chosen.isdecimal():
                 print(f"Choose a number between 1 and {len(self.cards)}")
                 idx -= 1
             elif not (1 <= int(chosen) <= len(self.cards)):
                 print(f"Choose a number between 1 and {len(self.cards)}")
                 idx -= 1
-            elif _has_theme \
-                and self.cards[int(chosen) - 1].CARDTYPE not in special_tuple \
-                and self.cards[int(chosen) - 1].CARDTYPE != theme_of_table:
-                print(f"You have a card of the theme {theme_of_table}. You must choose that card")
+            elif (
+                _has_theme
+                and self.cards[int(chosen) - 1].CARDTYPE not in special_tuple
+                and self.cards[int(chosen) - 1].CARDTYPE != theme_of_table
+            ):
+                print(
+                    f"You have a card of the theme {theme_of_table}. You must choose that card"
+                )
                 idx -= 1
 
             idx += 1

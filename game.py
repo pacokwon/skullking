@@ -2,6 +2,7 @@ from deck import Deck
 from player import Player
 from skullconstants import DEBUG, SkullEnum
 
+
 class Game:
     """
     Game class
@@ -9,6 +10,7 @@ class Game:
         This program consists of 10 'rounds',
         each of which have N 'games' where N is the current round number
     """
+
     def __init__(self, nplayers):
         """
         Game class constructor
@@ -51,7 +53,9 @@ class Game:
         # update score
         for ith, tup in enumerate(zip(self.yohoho, wins_count)):
             if tup[0] == tup[1]:
-                self.players[ith].score += 10 * self.round_count if tup[0] == 0 else 20 * tup[0]
+                self.players[ith].score += (
+                    10 * self.round_count if tup[0] == 0 else 20 * tup[0]
+                )
             else:
                 self.players[ith].score -= 10 * abs(tup[0] - tup[1])
 
@@ -78,7 +82,9 @@ class Game:
         # take turns choosing a card
         while player_idx < len(self.players):
             who_goes_idx = (self.goes_first + player_idx) % len(self.players)
-            chosen = self.players[who_goes_idx].choose(self.extract_theme(cards_on_table)) # choose() returns a card object
+            chosen = self.players[who_goes_idx].choose(
+                self.extract_theme(cards_on_table)
+            )  # choose() returns a card object
 
             if DEBUG:
                 print(f"Player {who_goes_idx} chose {chosen}")
@@ -87,7 +93,9 @@ class Game:
             player_idx += 1
 
         # evaluate winner of this game
-        self.goes_first = ( self.evaluate_winner(cards_on_table) + len(self.players) - self.goes_first ) % len(self.players)
+        self.goes_first = (
+            self.evaluate_winner(cards_on_table) + len(self.players) - self.goes_first
+        ) % len(self.players)
         return self.goes_first
 
     def evaluate_two(self, card1, card2):
@@ -109,7 +117,7 @@ class Game:
         a total of 80 combinations is possible
         """
 
-        rgb_tuple = ( SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE )
+        rgb_tuple = (SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE)
         TYPE1 = card1.CARDTYPE
         TYPE2 = card2.CARDTYPE
 
@@ -123,13 +131,13 @@ class Game:
 
         elif TYPE1 == SkullEnum.MERMAID:
             # 9 combinations
-            return False if TYPE2 in ( SkullEnum.PIRATE, SkullEnum.GREENPIRATE ) else True
+            return False if TYPE2 in (SkullEnum.PIRATE, SkullEnum.GREENPIRATE) else True
 
         elif TYPE1 == SkullEnum.PIRATE or TYPE1 == SkullEnum.GREENPIRATE:
             # 18 combinations
             return False if TYPE2 == SkullEnum.SKULLKING else True
 
-        elif TYPE1 in rgb_tuple: # 9
+        elif TYPE1 in rgb_tuple:  # 9
             if TYPE2 in rgb_tuple:
                 return card1.number > card2.number if TYPE1 == TYPE2 else True
             elif TYPE2 in (
@@ -137,13 +145,13 @@ class Game:
                 SkullEnum.MERMAID,
                 SkullEnum.PIRATE,
                 SkullEnum.GREENPIRATE,
-                SkullEnum.SKULLKING
+                SkullEnum.SKULLKING,
             ):
                 return False
 
-            return True # white
+            return True  # white
 
-        elif TYPE1 == SkullEnum.BLACK: # 9
+        elif TYPE1 == SkullEnum.BLACK:  # 9
             if TYPE2 == SkullEnum.WHITE or TYPE2 in rgb_tuple:
                 return True
 
@@ -164,14 +172,14 @@ class Game:
         """
         theme = None
         winning = -1
-        theme_tuple = ( SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE, SkullEnum.BLACK )
+        theme_tuple = (SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE, SkullEnum.BLACK)
 
         if DEBUG:
             print("\n------- Evaluation Start -------")
             print("Cards on Table:")
             print(cards_on_table)
 
-        for idx, choice in enumerate( cards_on_table ):
+        for idx, choice in enumerate(cards_on_table):
             if DEBUG:
                 print(f"\nPlayer {idx}'s turn")
 
@@ -189,11 +197,15 @@ class Game:
 
             if not self.evaluate_two(cards_on_table[winning], cards_on_table[idx]):
                 if DEBUG:
-                    print(f"\tPlayer {idx} {cards_on_table[idx]} & Player {winning} {cards_on_table[winning]} Evaluation -> Winner is {cards_on_table[idx]}")
+                    print(
+                        f"\tPlayer {idx} {cards_on_table[idx]} & Player {winning} {cards_on_table[winning]} Evaluation -> Winner is {cards_on_table[idx]}"
+                    )
                 winning = idx
 
         if DEBUG:
-            print(f"\nWinner of this turn is Player {winning + 1}, with {cards_on_table[winning]}")
+            print(
+                f"\nWinner of this turn is Player {winning + 1}, with {cards_on_table[winning]}"
+            )
             print("-------- Evaluation Fin --------\n")
 
         return winning
@@ -228,7 +240,7 @@ class Game:
             the theme of the parameter 'cards'
             None if there is no theme
         """
-        color_tuple = ( SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE, SkullEnum.BLACK )
+        color_tuple = (SkullEnum.RED, SkullEnum.GREEN, SkullEnum.BLUE, SkullEnum.BLACK)
 
         for card in cards:
             if card.CARDTYPE in color_tuple:

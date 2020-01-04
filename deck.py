@@ -1,8 +1,10 @@
 from random import shuffle
 from skullcard import *
 
+
 class Deck:
     SIZE = sum(Sizes.values())
+
     def __init__(self):
         self.deck = []
         self.deck += [WhiteFlag() for _ in range(Sizes["WHITE"])]
