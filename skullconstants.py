@@ -11,7 +11,10 @@
 #     PIRATE      = 6
 #     GREENPIRATE = 7
 #     SKULLKING   = 8
+ACCEPT_TIMEOUT_SECONDS = 60
 DEBUG = True
+HOST = "127.0.0.1"
+PORT = 1234
 
 
 class SkullEnum(object):
@@ -41,18 +44,4 @@ Sizes = {
     "GREENPIRATE": 6,
     "SKULLKING": 1,
 }
-
-# class Sizes(object):
-#     """
-#     sizes for card types
-#     """
-#     WHITE 	= 6
-#     RED   	= 13
-#     GREEN 	= 13
-#     BLUE  	= 13
-#     BLACK 	= 13
-#     MERMAID     = 3
-#     PIRATE      = 6
-#     GREENPIRATE = 6
-#     SKULLKING   = 1
 
