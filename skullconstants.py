@@ -16,6 +16,7 @@ DEBUG = True
 HEADER_SIZE = 10
 HOST = "127.0.0.1"
 PORT = 1234
+MAX_USERS = 7
 
 
 class SkullEnum(object):
