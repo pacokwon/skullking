@@ -1,4 +1,5 @@
-from skullconstants import SkullEnum
+from skullconstants import HEADER_SIZE, SkullEnum
+import socket
 
 
 class Player:
@@ -9,11 +10,12 @@ class Player:
 
     ID = 0
 
-    def __init__(self):
+    def __init__(self, sock):
         self.cards = []
         self.id = Player.ID
         Player.ID += 1
         self.score = 0
+        self.sock = sock
 
     def set_cards(self, cards):
         """
@@ -27,10 +29,16 @@ class Player:
         """
         Show the set of cards that this player currently has
         """
-        print(f"\n------- Player {self.id + 1} CARDS --------")
+        message = ""
+        message += f"\n------- Your Cards --------\n"
         for idx, card in enumerate(self.cards):
-            print(f"{idx + 1}:\t{card}")
-        print("-------------------------------")
+            message += f"{idx + 1}:\t{card}\n"
+        message += "---------------------------\n"
+
+        self.send(message)
+
+        if DEBUG:
+            print(message)
 
     def choose(self, theme_of_table):
         """
@@ -101,6 +109,11 @@ class Player:
                 return True
 
         return False
+
+    def send(self, data):
+        encoded_data = data.encode("utf-8")
+        header = f"{len(encoded_data):<{HEADER_SIZE}}".encode("utf-8")
+        self.sock.send(header + encoded_data)
 
     def __repr__(self):
         """

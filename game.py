@@ -1,6 +1,9 @@
 from deck import Deck
 from player import Player
-from skullconstants import DEBUG, SkullEnum
+from skullconstants import ACCEPT_TIMEOUT_SECONDS, DEBUG, HOST, PORT, SkullEnum
+import select
+import socket
+import time
 
 
 class Game:
@@ -11,18 +14,37 @@ class Game:
         each of which have N 'games' where N is the current round number
     """
 
-    def __init__(self, nplayers):
+    def __init__(self):
         """
         Game class constructor
-
-        params:
-            nplayers: number of players in this game
         """
+        self.accept_connections()  # initialize self.clients and self.server
         self.round_count = 3
         self.goes_first = 0
         self.deck = Deck()
-        self.players = [Player() for _ in range(nplayers)]
-        self.yohoho = [0 for _ in range(nplayers)]
+        self.players = [Player(client) for client in self.clients]
+        self.yohoho = [0 for _ in self.clients]
+
+    def accept_connections(self):
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server = server
+        self.clients = []
+        server.bind((HOST, PORT))
+        server.listen()
+        end_time = time.time() + ACCEPT_TIMEOUT_SECONDS
+        print("Accepting Connections...")
+        while time.time() < end_time:
+            read_sockets, _, _ = select.select([server], [], [], 0)  # non-blocking
+            if read_sockets:
+                client, _ = server.accept()
+                self.clients.append(client)
+                client.send(f"You are User {len(self.clients)}".encode("utf-8"))
+
+                if len(self.clients) == 7:
+                    break
+
+        print(f"{len(self.clients)} users connected")
 
     def operate_round(self):
         """
@@ -38,8 +60,7 @@ class Game:
             player.set_cards([self.deck.deal() for _ in range(self.round_count)])
 
         if DEBUG:
-            print("Deal Complete")
-            print(self.players)
+            print(f"Deal Complete\n{self.players}")
 
         # yo ho ho!
         for ith, player in enumerate(self.players):

@@ -3,9 +3,7 @@ from game import Game
 
 
 def main():
-    game = Game(3)
-    for _ in range(10):
-        game.operate_round()
+    game = Game()
 
 
 if __name__ == "__main__":
