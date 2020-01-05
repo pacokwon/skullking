@@ -1,4 +1,5 @@
 from skullconstants import HEADER_SIZE, SkullEnum
+import json
 import socket
 
 
@@ -35,7 +36,7 @@ class Player:
             message += f"{idx + 1}:\t{card}\n"
         message += "---------------------------\n"
 
-        self.send(message)
+        self.send("out", message)
 
         if DEBUG:
             print(message)
@@ -86,6 +87,7 @@ class Player:
     def yohoho(self):
         """
         Yohoho!
+        The user guesses how many 'games' ze thinks ze will win in the current round
         """
         self.show_cards()
         chosen = input(f"Player {self.id + 1} - Yo ho ho!: ")
@@ -110,8 +112,27 @@ class Player:
 
         return False
 
-    def send(self, data):
-        encoded_data = data.encode("utf-8")
+    #  TODO: Add Validators!!!
+    def send(self, msg_type, msg_payload):
+        """
+        send data to client
+        params:
+            msg_type: type of message
+            msg_payload: actual data meant to be sent to the client
+
+        msg_type, msg_payload form a variable called 'data'.
+        The 'data' variable must follow these rules:
+        'data' has two keys:
+            1) type: str
+                the value corresponding to this key is either 'in' or 'out'
+            2) payload: str
+                If the 'type' attribute is 'in', then the payload acts as a
+                prompt before receiving input
+                If the 'type' attribute is 'out', then the payload is printed
+                to stdout(the console)
+        """
+        stringified = json.dumps({"type": msg_type, "payload": msg_payload})
+        encoded_data = stringified.encode("utf-8")
         header = f"{len(encoded_data):<{HEADER_SIZE}}".encode("utf-8")
         self.sock.send(header + encoded_data)
 
