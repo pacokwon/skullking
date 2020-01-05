@@ -1,6 +1,13 @@
 from deck import Deck
 from player import Player
-from skullconstants import ACCEPT_TIMEOUT_SECONDS, DEBUG, HOST, PORT, SkullEnum
+from skullconstants import (
+    ACCEPT_TIMEOUT_SECONDS,
+    DEBUG,
+    HOST,
+    PORT,
+    MAX_USERS,
+    SkullEnum,
+)
 import select
 import socket
 import time
@@ -39,9 +46,8 @@ class Game:
             if read_sockets:
                 client, _ = server.accept()
                 self.clients.append(client)
-                client.send(f"You are User {len(self.clients)}".encode("utf-8"))
 
-                if len(self.clients) == 7:
+                if len(self.clients) == MAX_USERS:
                     break
 
         print(f"{len(self.clients)} users connected")
