@@ -10,7 +10,7 @@ def main():
         pass
 
 
-def receive_messege(client):
+def receive_message(client):
     try:
         message_size = client.recv(HEADER_SIZE)
         if not len(message_size):
