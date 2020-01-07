@@ -8,7 +8,6 @@ import socket
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((HOST, PORT))
-    client.setblocking(False)
     while True:
         readable, _, _ = select.select([client], [], [])
 
