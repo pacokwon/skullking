@@ -1,5 +1,6 @@
-from skullconstants import HEADER_SIZE, SkullEnum
-import json
+from skullconstants import DEBUG, HEADER_SIZE, SkullEnum
+from validators import choose_validator, yohoho_validator
+import pickle
 import socket
 
 
@@ -17,6 +18,7 @@ class Player:
         Player.ID += 1
         self.score = 0
         self.sock = sock
+        self.send(msg_type="out", msg_data=f"{Player.ID} Users connected")
 
     def set_cards(self, cards):
         """
@@ -50,39 +52,21 @@ class Player:
             SkullCard object chosen by the player
         """
         self.show_cards()
-        _has_theme = self.has_theme(theme_of_table)
-        special_tuple = (
-            SkullEnum.WHITE,
-            SkullEnum.MERMAID,
-            SkullEnum.PIRATE,
-            SkullEnum.GREENPIRATE,
-            SkullEnum.SKULLKING,
+        self.send(
+            msg_type="in",
+            msg_data=f"Player {self.id} - Choose Card: ( 1 ~ {len(self.cards)} ): ",
+            msg_validator=choose_validator,
+            payload={"theme": theme_of_table},
         )
 
-        idx = 0
-        while idx < 1:
-            chosen = input(
-                f"Player {self.id} - Choose Card: ( 1 ~ {len(self.cards)} ): "
-            )
-            if not chosen.isdecimal():
-                print(f"Choose a number between 1 and {len(self.cards)}")
-                idx -= 1
-            elif not (1 <= int(chosen) <= len(self.cards)):
-                print(f"Choose a number between 1 and {len(self.cards)}")
-                idx -= 1
-            elif (
-                _has_theme
-                and self.cards[int(chosen) - 1].CARDTYPE not in special_tuple
-                and self.cards[int(chosen) - 1].CARDTYPE != theme_of_table
-            ):
-                print(
-                    f"You have a card of the theme {theme_of_table}. You must choose that card"
-                )
-                idx -= 1
+        try:
+            reply = self.receive()
+            chosen = int(reply["payload"])
+        except ValueError:
+            print("ValueError! Received non-integer data from client")
+            return None
 
-            idx += 1
-
-        return self.cards.pop(int(chosen) - 1)
+        return self.cards.pop(chosen - 1)
 
     def yohoho(self):
         """
@@ -90,51 +74,68 @@ class Player:
         The user guesses how many 'games' ze thinks ze will win in the current round
         """
         self.show_cards()
-        chosen = input(f"Player {self.id + 1} - Yo ho ho!: ")
-        while not chosen.isdecimal():
-            print(f"Choose a number!")
-            chosen = input(f"Player {self.id + 1} - Yo ho ho!: ")
+        self.send(
+            msg_type="in",
+            msg_data=f"Player {self.id + 1} - Yo ho ho!: ",
+            msg_validator=yohoho_validator,
+        )
 
-        return int(chosen)
-
-    def has_theme(self, theme):
-        """
-        evaluate if player's current set of cards has a specific theme
-        params:
-            theme: the desired theme to investigate on
-        returns:
-            True if there is a card of the given theme
-            False otherwise
-        """
-        for card in self.cards:
-            if card.CARDTYPE == theme:
-                return True
-
-        return False
-
-    #  TODO: Add Validators!!!
-    def send(self, msg_type, msg_payload):
+    def send(self, msg_type, msg_data, msg_validator=None, payload=None):
         """
         send data to client
         params:
             msg_type: type of message
-            msg_payload: actual data meant to be sent to the client
+            msg_data: actual data meant to be sent to the client
+            msg_validator: name of validator function
+            payload: additional payload
 
-        msg_type, msg_payload form a variable called 'data'.
-        The 'data' variable must follow these rules:
-        'data' has two keys:
+        the three parameters form a dictionary called 'data'.
+        'data' has three keys:
             1) type: str
                 the value corresponding to this key is either 'in' or 'out'
-            2) payload: str
-                If the 'type' attribute is 'in', then the payload acts as a
+            2) message: str
+                If the 'type' attribute is 'in', then the message acts as a
                 prompt before receiving input
-                If the 'type' attribute is 'out', then the payload is printed
+                If the 'type' attribute is 'out', then the message is printed
                 to stdout(the console)
+            3) validator: object
+                The validator function. None if validation is
+                not necessary.
+            4) payload: object
+                Additional payload to be used freely
         """
-        stringified = json.dumps({"type": msg_type, "payload": msg_payload})
-        encoded_data = stringified.encode("utf-8")
-        header = f"{len(encoded_data):<{HEADER_SIZE}}".encode("utf-8")
-        self.sock.send(header + encoded_data)
+        pickled = pickle.dumps(
+            {
+                "type": msg_type,
+                "message": msg_data,
+                "validator": msg_validator,
+                "payload": payload,
+            }
+        )
+
+        if DEBUG:
+            if len(pickled) > HEADER_SIZE:
+                print(f"Pickled length {len(pickled)} exceeds HEADER_SIZE")
+
+        header = f"{len(pickled):<{HEADER_SIZE}}".encode("utf-8")
+        self.sock.send(header + pickled)
+
+    def receive(self):
+        """
+        Receive data from client socket
+
+        returns:
+            unpickled python object from client socket
+        """
+        try:
+            data_size = self.sock.recv(HEADER_SIZE)
+            if not len(data_size):
+                return False
+
+            data_size = int(data_size.decode("utf-8"))
+            return pickle.loads(self.sock.recv(data_size))
+        except:
+            return False
 
     def __repr__(self):
         """
