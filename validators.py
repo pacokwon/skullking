@@ -1,8 +1,18 @@
 from skullconstants import HEADER_SIZE, SkullEnum
 
 
-def choose_validator(obj, theme_of_table):
-    _has_theme = obj.has_theme(theme_of_table)
+def choose_validator(payload, chosen):
+    """
+    Validator function for choose function in Player class
+
+    params:
+        payload: payload containing the information this validator function needs
+        chosen: chosen value
+    returns:
+        True if chosen value is valid
+        False otherwise
+    """
+    _has_theme = has_theme(payload["theme"])
     special_tuple = (
         SkullEnum.WHITE,
         SkullEnum.MERMAID,
@@ -11,35 +21,56 @@ def choose_validator(obj, theme_of_table):
         SkullEnum.SKULLKING,
     )
 
-    def validator(chosen):
-        if not chosen.isdecimal():
-            print(f"Choose a number between 1 and {len(obj.cards)}")
-            return False
-        if not (1 <= int(chosen) <= len(obj.cards)):
-            print(f"Choose a number between 1 and {len(obj.cards)}")
-            return False
-        if (
-            _has_theme
-            and self.cards[int(chosen) - 1].CARDTYPE not in special_tuple
-            and self.cards[int(chosen) - 1].CARDTYPE != theme_of_table
-        ):
-            print(
-                f"You have a card of the theme {theme_of_table}. You must choose that card"
-            )
-            return False
+    if not chosen.isdecimal():
+        print(f"Choose a number between 1 and {len(payload['self'].cards)}")
+        return False
+    if not (1 <= int(chosen) <= len(payload["self"].cards)):
+        print(f"Choose a number between 1 and {len(payload['self'].cards)}")
+        return False
+    if (
+        _has_theme
+        and self.cards[int(chosen) - 1].CARDTYPE not in special_tuple
+        and self.cards[int(chosen) - 1].CARDTYPE != payload["theme"]
+    ):
+        print(
+            f"You have a card of the theme {payload['theme']}. You must choose that card"
+        )
+        return False
 
-        return True
-
-    return validator
+    return True
 
 
-def yohoho_validator():
-    def validator(chosen):
-        if not chosen.isdecimal():
-            print(f"Choose a number!")
-            return False
+def yohoho_validator(payload, chosen):
+    """
+    Validator function for yohoho function in Player class
 
-        return True
+    params:
+        payload: payload containing the information this validator function needs
+        chosen: chosen value
+    returns:
+        True if chosen value is valid
+        False otherwise
+    """
 
-    return validator
+    if not chosen.isdecimal():
+        print(f"Choose a number!")
+        return False
 
+    return True
+
+
+def has_theme(cards, theme):
+    """
+    evaluate if a set of cards has a specific theme
+    params:
+        cards: a list of SkullCard object
+        theme: the desired theme to investigate on
+    returns:
+        True if there is a card of the given theme
+        False otherwise
+    """
+    for card in cards:
+        if card.CARDTYPE == theme:
+            return True
+
+    return False
