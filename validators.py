@@ -22,10 +22,10 @@ def choose_validator(payload, chosen):
     )
 
     if not chosen.isdecimal():
-        print(f"Choose a number between 1 and {len(payload['self'].cards)}")
+        print(f"Choose a number between 1 and {len(payload['cards'])}")
         return False
-    if not (1 <= int(chosen) <= len(payload["self"].cards)):
-        print(f"Choose a number between 1 and {len(payload['self'].cards)}")
+    if not (1 <= int(chosen) <= len(payload["cards"])):
+        print(f"Choose a number between 1 and {len(payload['cards'])}")
         return False
     if (
         _has_theme

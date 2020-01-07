@@ -36,7 +36,7 @@ class Player:
         message += f"\n------- Your Cards --------\n"
         for idx, card in enumerate(self.cards):
             message += f"{idx + 1}:\t{card}\n"
-        message += "---------------------------\n"
+        message += "---------------------------"
 
         self.send("out", message)
 
@@ -54,9 +54,9 @@ class Player:
         self.show_cards()
         self.send(
             msg_type="in",
-            msg_data=f"Player {self.id} - Choose Card: ( 1 ~ {len(self.cards)} ): ",
+            msg_data=f"Player {self.id + 1} - Choose Card: ( 1 ~ {len(self.cards)} ): ",
             msg_validator=choose_validator,
-            payload={"theme": theme_of_table},
+            payload={"theme": theme_of_table, "cards": self.cards},
         )
 
         try:
