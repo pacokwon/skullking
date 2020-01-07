@@ -4,11 +4,9 @@ from game import Game
 
 def main():
     game = Game()
+    game.operate_round()
+    game.close()
 
 
 if __name__ == "__main__":
-    # deck = Deck()
-    # game = Game(3)
-    # game.operate_round()
-    # print(game.winners())
     main()
