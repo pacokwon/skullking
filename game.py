@@ -25,32 +25,37 @@ class Game:
         """
         Game class constructor
         """
-        self.accept_connections()  # initialize self.clients and self.server
         self.round_count = 3
         self.goes_first = 0
         self.deck = Deck()
-        self.players = [Player(client) for client in self.clients]
-        self.yohoho = [0 for _ in self.clients]
+        self.players = []
+        self.client_sockets = {}
+        self.accept_connections()
+        self.client_sockets = {player.sock: player.id for player in self.players}
+        self.yohoho_list = [0 for _ in self.players]
 
     def accept_connections(self):
+        """
+        Initialize server socket and players
+        """
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server = server
-        self.clients = []
         server.bind((HOST, PORT))
         server.listen()
+        server.setblocking(False)
         end_time = time.time() + ACCEPT_TIMEOUT_SECONDS
         print("Accepting Connections...")
         while time.time() < end_time:
             read_sockets, _, _ = select.select([server], [], [], 0)  # non-blocking
             if read_sockets:
                 client, _ = server.accept()
-                self.clients.append(client)
+                self.players.append(Player(client))
 
-                if len(self.clients) == MAX_USERS:
+                if len(self.players) == MAX_USERS:
                     break
 
-        print(f"{len(self.clients)} users connected")
+        print(f"{len(self.players)} users connected")
 
     def operate_round(self):
         """
@@ -68,9 +73,7 @@ class Game:
         if DEBUG:
             print(f"Deal Complete\n{self.players}")
 
-        # yo ho ho!
-        for ith, player in enumerate(self.players):
-            self.yohoho[ith] = player.yohoho()
+        self.yohoho()
 
         # operate games
         for _ in range(self.round_count):
@@ -78,7 +81,7 @@ class Game:
             wins_count[self.goes_first] += 1
 
         # update score
-        for ith, tup in enumerate(zip(self.yohoho, wins_count)):
+        for ith, tup in enumerate(zip(self.yohoho_list, wins_count)):
             if tup[0] == tup[1]:
                 self.players[ith].score += (
                     10 * self.round_count if tup[0] == 0 else 20 * tup[0]
@@ -93,6 +96,28 @@ class Game:
             print(f"-------- Round {self.round_count} Fin --------")
 
         self.round_count += 1
+
+    def yohoho(self):
+        # yo ho ho!
+        for ith, player in enumerate(self.players):
+            if DEBUG:
+                print(f"Sending Yohoho request to player {ith + 1}")
+            player.yohoho()
+
+        player_cnt = 0
+        while player_cnt < len(self.players):
+            readable, _, _ = select.select(self.client_sockets, [], [])
+
+            for sock in readable:
+                idx = self.client_sockets[sock]
+                data = self.players[idx].receive()
+                if DEBUG:
+                    print(f"Received data {data} from client {idx + 1}")
+                self.yohoho_list[idx] = data["payload"]
+                player_cnt += 1
+
+        if DEBUG:
+            print(f"Complete yohoho list is {self.yohoho_list}")
 
     def operate_game(self):
         """
@@ -247,10 +272,9 @@ class Game:
         returns:
             tuple of Player objects
         """
-        max_idx = 0
         max_score = self.players[0].score
         winners = []
-        for idx, player in enumerate(self.players):
+        for _, player in enumerate(self.players):
             if max_score == player.score:
                 winners.append(player)
             elif max_score > player.score:
