@@ -3,6 +3,7 @@ from skullconstants import HEADER_SIZE, HOST, PORT
 import pickle
 import select
 import socket
+import sys
 
 
 def main():
@@ -13,6 +14,11 @@ def main():
 
         if readable:
             message = receive_data(client)
+
+            if message is False:
+                print("Closing game...")
+                sys.exit()
+
             operate_action(client, message)
 
 
