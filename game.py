@@ -29,7 +29,6 @@ class Game:
         self.goes_first = 0
         self.deck = Deck()
         self.players = []
-        self.client_sockets = {}
         self.accept_connections()
         self.client_sockets = {player.sock: player.id for player in self.players}
         self.yohoho_list = [0 for _ in self.players]
@@ -43,7 +42,6 @@ class Game:
         self.server = server
         server.bind((HOST, PORT))
         server.listen()
-        server.setblocking(False)
         end_time = time.time() + ACCEPT_TIMEOUT_SECONDS
         print("Accepting Connections...")
         while time.time() < end_time:
@@ -89,8 +87,12 @@ class Game:
             else:
                 self.players[ith].score -= 10 * abs(tup[0] - tup[1])
 
+        broadcast_message = f"\n------- Round {self.round_count:<2} standings -------\n"
         for ith, player in enumerate(self.players):
             print(f"Player {ith}\t{player.score}")
+            broadcast_message += f"Player {ith}\t{player.score}\n"
+        broadcast_message += f"----------------------------------\n"
+        self.broadcast(broadcast_message)
 
         if DEBUG:
             print(f"-------- Round {self.round_count} Fin --------")
@@ -98,7 +100,9 @@ class Game:
         self.round_count += 1
 
     def yohoho(self):
-        # yo ho ho!
+        """
+        Send a yohoho request and asynchronously receive responses
+        """
         for ith, player in enumerate(self.players):
             if DEBUG:
                 print(f"Sending Yohoho request to player {ith + 1}")
@@ -129,8 +133,8 @@ class Game:
             the id of the winner
         """
         cards_on_table = []
-
         player_idx = 0
+        self.broadcast(f"Player {self.goes_first + 1} will go first")
         # take turns choosing a card
         while player_idx < len(self.players):
             who_goes_idx = (self.goes_first + player_idx) % len(self.players)
@@ -148,6 +152,9 @@ class Game:
         self.goes_first = (
             self.evaluate_winner(cards_on_table) + len(self.players) - self.goes_first
         ) % len(self.players)
+
+        self.broadcast(f"Player {self.goes_first + 1} wins!")
+
         return self.goes_first
 
     def evaluate_two(self, card1, card2):
@@ -298,3 +305,12 @@ class Game:
                 return card.CARDTYPE
 
         return None
+
+    def broadcast(self, message):
+        for player in self.players:
+            player.send("out", message)
+
+    def close(self):
+        for sock in self.client_sockets:
+            sock.close()
+
