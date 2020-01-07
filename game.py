@@ -1,13 +1,7 @@
 from deck import Deck
 from player import Player
-from skullconstants import (
-    ACCEPT_TIMEOUT_SECONDS,
-    DEBUG,
-    HOST,
-    PORT,
-    MAX_USERS,
-    SkullEnum,
-)
+from server import Server
+from skullconstants import DEBUG, SkullEnum
 import select
 import socket
 import time
@@ -25,35 +19,12 @@ class Game:
         """
         Game class constructor
         """
+        self.server = Server()
         self.round_count = 3
         self.goes_first = 0
         self.deck = Deck()
-        self.players = []
-        self.accept_connections()
-        self.client_sockets = {player.sock: player.id for player in self.players}
+        self.players = [Player(sock) for sock in self.server.client_sockets]
         self.yohoho_list = [0 for _ in self.players]
-
-    def accept_connections(self):
-        """
-        Initialize server socket and players
-        """
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server = server
-        server.bind((HOST, PORT))
-        server.listen()
-        end_time = time.time() + ACCEPT_TIMEOUT_SECONDS
-        print("Accepting Connections...")
-        while time.time() < end_time:
-            read_sockets, _, _ = select.select([server], [], [], 0)  # non-blocking
-            if read_sockets:
-                client, _ = server.accept()
-                self.players.append(Player(client))
-
-                if len(self.players) == MAX_USERS:
-                    break
-
-        print(f"{len(self.players)} users connected")
 
     def operate_round(self):
         """
@@ -110,10 +81,10 @@ class Game:
 
         player_cnt = 0
         while player_cnt < len(self.players):
-            readable, _, _ = select.select(self.client_sockets, [], [])
+            readable, _, _ = select.select(self.server.client_sockets, [], [])
 
             for sock in readable:
-                idx = self.client_sockets[sock]
+                idx = self.server.client_sockets[sock]
                 data = self.players[idx].receive()
                 if DEBUG:
                     print(f"Received data {data} from client {idx + 1}")
@@ -311,6 +282,5 @@ class Game:
             player.send("out", message)
 
     def close(self):
-        for sock in self.client_sockets:
-            sock.close()
+        self.server.close()
 
