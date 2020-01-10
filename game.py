@@ -4,6 +4,7 @@ from server import Server
 from skullconstants import DEBUG, SkullEnum
 import select
 import socket
+import sys
 import time
 
 
@@ -20,6 +21,9 @@ class Game:
         Game class constructor
         """
         self.server = Server()
+        if not self.server.client_sockets:
+            print("Not enough players. Exiting...")
+            sys.exit()
         self.round_count = 3
         self.goes_first = 0
         self.deck = Deck()
@@ -107,6 +111,7 @@ class Game:
         """
         cards_on_table = []
         player_idx = 0
+        table_status = "\n------- Current Table -------\n"
         # take turns choosing a card
         while player_idx < len(self.players):
             who_goes_idx = (self.goes_first + player_idx) % len(self.players)
@@ -122,6 +127,9 @@ class Game:
                 print(f"Player {who_goes_idx + 1} chose {chosen}")
 
             cards_on_table.append(chosen)
+            table_status += f"Player {who_goes_idx + 1}\t{chosen}\n"
+            self.broadcast(table_status + "-----------------------------")
+
             player_idx += 1
 
         # evaluate winner of this game
