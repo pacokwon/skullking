@@ -18,7 +18,7 @@ class Player:
         Player.ID += 1
         self.score = 0
         self.sock = sock
-        self.send(msg_type="out", msg_data=f"{Player.ID} Users connected")
+        self.send(msg_type="out", msg_data=f"You are Player {self.id + 1}")
 
     def set_cards(self, cards):
         """
@@ -33,7 +33,7 @@ class Player:
         Show the set of cards that this player currently has
         """
         message = ""
-        message += f"\n------- Your Cards --------\n"
+        message += f"------- Your Cards --------\n"
         for idx, card in enumerate(self.cards):
             message += f"{idx + 1}:\t{card}\n"
         message += "---------------------------"

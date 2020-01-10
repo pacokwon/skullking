@@ -25,6 +25,7 @@ class Game:
         self.deck = Deck()
         self.players = [Player(sock) for sock in self.server.client_sockets]
         self.yohoho_list = [0 for _ in self.players]
+        self.broadcast(f"{len(self.players)} players connected")
 
     def operate_round(self):
         """
@@ -48,6 +49,7 @@ class Game:
         for _ in range(self.round_count):
             self.goes_first = self.operate_game()
             wins_count[self.goes_first] += 1
+            self.broadcast(self.parse_wins(wins_count))
 
         # update score
         for ith, tup in enumerate(zip(self.yohoho_list, wins_count)):
@@ -60,8 +62,8 @@ class Game:
 
         broadcast_message = f"\n------- Round {self.round_count:<2} standings -------\n"
         for ith, player in enumerate(self.players):
-            print(f"Player {ith}\t{player.score}")
-            broadcast_message += f"Player {ith}\t{player.score}\n"
+            print(f"Player {ith + 1}\t\t{player.score}")
+            broadcast_message += f"Player {ith + 1}\t\t{player.score}\n"
         broadcast_message += f"----------------------------------\n"
         self.broadcast(broadcast_message)
 
@@ -105,16 +107,19 @@ class Game:
         """
         cards_on_table = []
         player_idx = 0
-        self.broadcast(f"Player {self.goes_first + 1} will go first")
         # take turns choosing a card
         while player_idx < len(self.players):
             who_goes_idx = (self.goes_first + player_idx) % len(self.players)
+            self.broadcast(
+                f"Player {who_goes_idx + 1}'s turn...", who_goes_idx, "Your turn..."
+            )
             chosen = self.players[who_goes_idx].choose(
                 self.extract_theme(cards_on_table)
             )  # choose() returns a card object
+            self.broadcast(f"Player {who_goes_idx + 1} dealt {chosen}", who_goes_idx)
 
             if DEBUG:
-                print(f"Player {who_goes_idx} chose {chosen}")
+                print(f"Player {who_goes_idx + 1} chose {chosen}")
 
             cards_on_table.append(chosen)
             player_idx += 1
@@ -277,10 +282,31 @@ class Game:
 
         return None
 
-    def broadcast(self, message):
-        for player in self.players:
-            player.send("out", message)
+    def broadcast(self, message, skip=-1, altmessage=None):
+        """
+        Distribute message to client sockets
+        params:
+            message: message to broadcast
+            skip: set this parameter if one wishes to skip a certain player
+            altmessage: set this parameter if one wishes to send a specialized
+                        message to the player being skipped
+        """
+        for idx, player in enumerate(self.players):
+            if idx == skip and altmessage is not None:
+                player.send("out", altmessage)
+            elif idx != skip:
+                player.send("out", message)
 
     def close(self):
+        """
+        Close all connections between client sockets
+        """
         self.server.close()
+
+    def parse_wins(self, wins_count):
+        msg = "\n------- Wins Count -------\n"
+        for idx, cnt in enumerate(wins_count):
+            msg += f"Player {idx + 1}\t{cnt:<2}\n"
+        msg += "--------------------------\n"
+        return msg
 
